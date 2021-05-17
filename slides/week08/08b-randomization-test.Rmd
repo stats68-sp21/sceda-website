@@ -1,0 +1,236 @@
+---
+title: "Randomization Tests"
+author: "Dr. Mine Dogucu"
+output: 
+  xaringan::moon_reader:
+    css: slide-style.css
+    seal: false
+    nature:
+      ratio: 16:9
+      highlightStyle: "pygments"
+      highlightLines: true
+      highlightLanguage: "r"
+    anchor_sections: FALSE
+---
+
+class: title-slide
+
+```{r echo = FALSE, message=FALSE}
+options(scipen=999)
+
+```
+
+
+<br>
+<br>
+.pull-right[ 
+
+# `r rmarkdown::metadata$title`
+## `r rmarkdown::metadata$author`
+]
+
+---
+
+```{r message=FALSE}
+library(openintro)
+library(tidyverse)
+library(janitor)
+glimpse(gender_discrimination)
+```
+
+Example from the OpenIntro Introductory Statistics with Randomization and Simulation Book
+
+---
+
+```{r}
+gender_discrimination %>% 
+  tabyl(gender, decision) %>% 
+  adorn_totals("row")
+```
+
+---
+
+class: middle
+
+## Hypotheses
+
+$H_0: \pi_m - \pi_f \leq 0$  
+$H_A: \pi_m - \pi_f > 0$
+
+---
+
+class: middle
+
+## Sample Statistic
+
+```{r}
+summary_table <- gender_discrimination %>% 
+  tabyl(gender, decision) %>% 
+  adorn_totals("row")
+```
+
+---
+
+## Sample Statistic
+
+```{r}
+summary_table 
+
+p_m <- summary_table [1, 2] / 24
+p_f <- summary_table [2, 2] / 24
+
+p_m - p_f
+```
+
+---
+
+class: middle
+
+```{r}
+observed_diff_p <- p_m - p_f
+```
+
+---
+
+class: middle
+
+Can this observed difference in promotion rates (`r p_m - p_f`) be due to chance rather than gender discrimination?
+
+---
+
+class: middle
+
+## Steps
+
+1.Shuffle the 48 personnel files.   
+2.Deal the 48 files into to two stacks. Stack 1 will have 35 files that represent the promoted files. Stack 2 will have 13 files that are not promoted.  
+3.Calculate the differences in promotion rates of males and females.   
+4.Repeat this process multiple times.
+
+---
+
+
+```{r}
+gender_discrimination
+```
+
+
+---
+
+```{r}
+set.seed(12345)
+gender_discrimination$simulated_decision <-
+  sample(gender_discrimination$decision)
+```
+
+---
+
+```{r}
+gender_discrimination
+```
+
+---
+
+```{r}
+gender_discrimination %>% 
+  tabyl(gender, simulated_decision) %>% 
+  adorn_totals("row")
+```
+
+
+---
+
+```{r}
+summary_table <- gender_discrimination %>% 
+  tabyl(gender, simulated_decision) %>% 
+  adorn_totals("row")
+
+p_m <- summary_table [1, 2] / 24
+p_f <- summary_table [2, 2] / 24
+
+p_m - p_f
+```
+
+
+
+---
+
+
+```{r cache=TRUE}
+set.seed(12345)
+
+for (i in 1:2){
+  simulated_decision <-
+  sample(gender_discrimination$decision)
+  print(simulated_decision)
+  rep = rep(i, 48)
+  print(rep)
+}
+  
+```
+
+---
+
+```{r cache=TRUE}
+set.seed(12345)
+
+for (i in 1:2){
+  simulated_decision <-
+  sample(gender_discrimination$decision)
+  print(simulated_decision)
+  rep = rep(i, 48)
+  print(rep)
+}
+```
+
+---
+
+```{r cache=TRUE}
+set.seed(12345)
+prop_diff <- c()
+  
+for (i in 1:100){
+  gender_discrimination$simulated_decision <-
+  sample(gender_discrimination$decision)
+ 
+  summary_table <- gender_discrimination %>% 
+  tabyl(gender, simulated_decision) %>% 
+  adorn_totals("row")
+
+  p_m <- summary_table [1, 2] / 24
+  p_f <- summary_table [2, 2] / 24
+
+  prop_diff_calc <- p_m - p_f
+  prop_diff <- c(prop_diff, prop_diff_calc)
+}
+```
+
+---
+
+```{r}
+prop_diff
+```
+
+---
+
+class: middle center
+
+```{r}
+hist(prop_diff)
+```
+
+---
+
+class: middle
+
+## p-value
+
+```{r}
+which(prop_diff >= observed_diff_p)
+```
+
+--
+
+```{r}
+length(which(prop_diff >= observed_diff_p)) / 100
+```

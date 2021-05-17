@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Randomization Tests</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr. Mine Dogucu" />
+    <script src="08b-randomization-test_files/header-attrs-2.7/header-attrs.js"></script>
+    <link rel="stylesheet" href="slide-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+class: title-slide
+
+
+
+
+&lt;br&gt;
+&lt;br&gt;
+.pull-right[ 
+
+# Randomization Tests
+## Dr. Mine Dogucu
+]
+
+---
+
+
+```r
+library(openintro)
+library(tidyverse)
+library(janitor)
+glimpse(gender_discrimination)
+```
+
+```
+## Rows: 48
+## Columns: 2
+## $ gender   &lt;fct&gt; male, male, male, male, male, male, male, male, male, male, m…
+## $ decision &lt;fct&gt; promoted, promoted, promoted, promoted, promoted, promoted, p…
+```
+
+Example from the OpenIntro Introductory Statistics with Randomization and Simulation Book
+
+---
+
+
+```r
+gender_discrimination %&gt;% 
+  tabyl(gender, decision) %&gt;% 
+  adorn_totals("row")
+```
+
+```
+##  gender promoted not promoted
+##    male       21            3
+##  female       14           10
+##   Total       35           13
+```
+
+---
+
+class: middle
+
+## Hypotheses
+
+`\(H_0: \pi_m - \pi_f \leq 0\)`  
+`\(H_A: \pi_m - \pi_f &gt; 0\)`
+
+---
+
+class: middle
+
+## Sample Statistic
+
+
+```r
+summary_table &lt;- gender_discrimination %&gt;% 
+  tabyl(gender, decision) %&gt;% 
+  adorn_totals("row")
+```
+
+---
+
+## Sample Statistic
+
+
+```r
+summary_table 
+```
+
+```
+##  gender promoted not promoted
+##    male       21            3
+##  female       14           10
+##   Total       35           13
+```
+
+```r
+p_m &lt;- summary_table [1, 2] / 24
+p_f &lt;- summary_table [2, 2] / 24
+
+p_m - p_f
+```
+
+```
+## [1] 0.2916667
+```
+
+---
+
+class: middle
+
+
+```r
+observed_diff_p &lt;- p_m - p_f
+```
+
+---
+
+class: middle
+
+Can this observed difference in promotion rates (0.2916667) be due to chance rather than gender discrimination?
+
+---
+
+class: middle
+
+## Steps
+
+1.Shuffle the 48 personnel files.   
+2.Deal the 48 files into to two stacks. Stack 1 will have 35 files that represent the promoted files. Stack 2 will have 13 files that are not promoted.  
+3.Calculate the differences in promotion rates of males and females.   
+4.Repeat this process multiple times.
+
+---
+
+
+
+```r
+gender_discrimination
+```
+
+```
+## # A tibble: 48 x 2
+##    gender decision
+##    &lt;fct&gt;  &lt;fct&gt;   
+##  1 male   promoted
+##  2 male   promoted
+##  3 male   promoted
+##  4 male   promoted
+##  5 male   promoted
+##  6 male   promoted
+##  7 male   promoted
+##  8 male   promoted
+##  9 male   promoted
+## 10 male   promoted
+## # … with 38 more rows
+```
+
+
+---
+
+
+```r
+set.seed(12345)
+gender_discrimination$simulated_decision &lt;-
+  sample(gender_discrimination$decision)
+```
+
+---
+
+
+```r
+gender_discrimination
+```
+
+```
+## # A tibble: 48 x 3
+##    gender decision simulated_decision
+##    &lt;fct&gt;  &lt;fct&gt;    &lt;fct&gt;             
+##  1 male   promoted promoted          
+##  2 male   promoted promoted          
+##  3 male   promoted promoted          
+##  4 male   promoted promoted          
+##  5 male   promoted not promoted      
+##  6 male   promoted promoted          
+##  7 male   promoted promoted          
+##  8 male   promoted promoted          
+##  9 male   promoted not promoted      
+## 10 male   promoted promoted          
+## # … with 38 more rows
+```
+
+---
+
+
+```r
+gender_discrimination %&gt;% 
+  tabyl(gender, simulated_decision) %&gt;% 
+  adorn_totals("row")
+```
+
+```
+##  gender promoted not promoted
+##    male       18            6
+##  female       17            7
+##   Total       35           13
+```
+
+
+---
+
+
+```r
+summary_table &lt;- gender_discrimination %&gt;% 
+  tabyl(gender, simulated_decision) %&gt;% 
+  adorn_totals("row")
+
+p_m &lt;- summary_table [1, 2] / 24
+p_f &lt;- summary_table [2, 2] / 24
+
+p_m - p_f
+```
+
+```
+## [1] 0.04166667
+```
+
+
+
+---
+
+
+
+```r
+set.seed(12345)
+
+for (i in 1:2){
+  simulated_decision &lt;-
+  sample(gender_discrimination$decision)
+  print(simulated_decision)
+  rep = rep(i, 48)
+  print(rep)
+}
+```
+
+```
+##  [1] promoted     promoted     promoted     promoted     not promoted
+##  [6] promoted     promoted     promoted     not promoted promoted    
+## [11] not promoted not promoted promoted     promoted     promoted    
+## [16] not promoted promoted     promoted     promoted     promoted    
+## [21] promoted     promoted     promoted     not promoted promoted    
+## [26] promoted     not promoted promoted     promoted     promoted    
+## [31] not promoted promoted     promoted     not promoted promoted    
+## [36] promoted     promoted     not promoted promoted     promoted    
+## [41] not promoted not promoted promoted     not promoted promoted    
+## [46] promoted     promoted     promoted    
+## Levels: promoted not promoted
+##  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [39] 1 1 1 1 1 1 1 1 1 1
+##  [1] promoted     promoted     not promoted promoted     promoted    
+##  [6] promoted     promoted     not promoted promoted     promoted    
+## [11] promoted     promoted     not promoted not promoted not promoted
+## [16] promoted     not promoted promoted     promoted     promoted    
+## [21] promoted     promoted     promoted     not promoted not promoted
+## [26] promoted     promoted     promoted     promoted     not promoted
+## [31] promoted     not promoted promoted     promoted     not promoted
+## [36] promoted     promoted     promoted     not promoted promoted    
+## [41] not promoted promoted     promoted     promoted     promoted    
+## [46] promoted     promoted     promoted    
+## Levels: promoted not promoted
+##  [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+## [39] 2 2 2 2 2 2 2 2 2 2
+```
+
+---
+
+
+```r
+set.seed(12345)
+
+for (i in 1:2){
+  simulated_decision &lt;-
+  sample(gender_discrimination$decision)
+  print(simulated_decision)
+  rep = rep(i, 48)
+  print(rep)
+}
+```
+
+```
+##  [1] promoted     promoted     promoted     promoted     not promoted
+##  [6] promoted     promoted     promoted     not promoted promoted    
+## [11] not promoted not promoted promoted     promoted     promoted    
+## [16] not promoted promoted     promoted     promoted     promoted    
+## [21] promoted     promoted     promoted     not promoted promoted    
+## [26] promoted     not promoted promoted     promoted     promoted    
+## [31] not promoted promoted     promoted     not promoted promoted    
+## [36] promoted     promoted     not promoted promoted     promoted    
+## [41] not promoted not promoted promoted     not promoted promoted    
+## [46] promoted     promoted     promoted    
+## Levels: promoted not promoted
+##  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+## [39] 1 1 1 1 1 1 1 1 1 1
+##  [1] promoted     promoted     not promoted promoted     promoted    
+##  [6] promoted     promoted     not promoted promoted     promoted    
+## [11] promoted     promoted     not promoted not promoted not promoted
+## [16] promoted     not promoted promoted     promoted     promoted    
+## [21] promoted     promoted     promoted     not promoted not promoted
+## [26] promoted     promoted     promoted     promoted     not promoted
+## [31] promoted     not promoted promoted     promoted     not promoted
+## [36] promoted     promoted     promoted     not promoted promoted    
+## [41] not promoted promoted     promoted     promoted     promoted    
+## [46] promoted     promoted     promoted    
+## Levels: promoted not promoted
+##  [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+## [39] 2 2 2 2 2 2 2 2 2 2
+```
+
+---
+
+
+```r
+set.seed(12345)
+prop_diff &lt;- c()
+  
+for (i in 1:100){
+  gender_discrimination$simulated_decision &lt;-
+  sample(gender_discrimination$decision)
+ 
+  summary_table &lt;- gender_discrimination %&gt;% 
+  tabyl(gender, simulated_decision) %&gt;% 
+  adorn_totals("row")
+
+  p_m &lt;- summary_table [1, 2] / 24
+  p_f &lt;- summary_table [2, 2] / 24
+
+  prop_diff_calc &lt;- p_m - p_f
+  prop_diff &lt;- c(prop_diff, prop_diff_calc)
+}
+```
+
+---
+
+
+```r
+prop_diff
+```
+
+```
+##   [1]  0.04166667 -0.04166667  0.20833333  0.04166667 -0.12500000 -0.04166667
+##   [7] -0.12500000  0.12500000  0.12500000  0.04166667  0.04166667  0.04166667
+##  [13] -0.04166667  0.20833333  0.12500000 -0.12500000  0.04166667  0.12500000
+##  [19]  0.12500000  0.12500000  0.04166667 -0.04166667  0.04166667  0.12500000
+##  [25] -0.12500000 -0.12500000  0.12500000  0.12500000 -0.12500000 -0.04166667
+##  [31] -0.04166667  0.04166667  0.04166667  0.12500000  0.12500000 -0.04166667
+##  [37]  0.12500000  0.29166667  0.04166667 -0.12500000  0.04166667 -0.04166667
+##  [43] -0.12500000  0.20833333  0.29166667  0.04166667 -0.20833333  0.12500000
+##  [49]  0.12500000  0.04166667 -0.04166667 -0.04166667 -0.04166667  0.04166667
+##  [55] -0.20833333 -0.04166667  0.12500000 -0.04166667 -0.04166667 -0.12500000
+##  [61] -0.12500000  0.20833333 -0.20833333  0.04166667 -0.12500000  0.04166667
+##  [67] -0.12500000  0.12500000 -0.04166667  0.04166667 -0.04166667  0.04166667
+##  [73]  0.20833333  0.04166667 -0.29166667 -0.12500000  0.04166667  0.04166667
+##  [79]  0.04166667  0.29166667 -0.04166667 -0.04166667  0.12500000 -0.04166667
+##  [85] -0.04166667 -0.04166667  0.04166667 -0.12500000  0.04166667 -0.04166667
+##  [91] -0.12500000 -0.12500000 -0.04166667 -0.04166667  0.12500000 -0.04166667
+##  [97]  0.20833333 -0.12500000 -0.29166667 -0.20833333
+```
+
+---
+
+class: middle center
+
+
+```r
+hist(prop_diff)
+```
+
+![](08b-randomization-test_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+
+---
+
+class: middle
+
+## p-value
+
+
+```r
+which(prop_diff &gt;= observed_diff_p)
+```
+
+```
+## [1] 38 45 80
+```
+
+--
+
+
+```r
+length(which(prop_diff &gt;= observed_diff_p)) / 100
+```
+
+```
+## [1] 0.03
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "pygments",
+"highlightLines": true,
+"highlightLanguage": "r"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
